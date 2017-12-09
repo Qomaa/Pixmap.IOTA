@@ -1,0 +1,16 @@
+{
+  "name": "iota.pixmap",
+  "version": "0.0.0",
+  "description": "Iota.Pixmap",
+  "main": "app.js",
+  "author": {
+    "name": "a"
+  },
+  "devDependencies": {
+    "@types/node": "^6.0.87",
+    "iota.lib.js": "^0.4.3"
+  },
+  "dependencies": {
+    "azure-storage": "^2.6.0"
+  }
+}
