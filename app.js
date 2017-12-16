@@ -40,34 +40,33 @@ var azure = require("azure-storage");
 var iota;
 var blobSvc = azure.createBlobService();
 var pixmap;
-initialize("https://nodes.iota.cafe", 443);
+var host = "http://node03.iotatoken.nl:15265";
+var port = 15265;
+var address = "CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
 start();
 function start() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!true) return [3 /*break*/, 2];
+                    iota = new IOTA({ 'host': host, 'port': port });
+                    _a.label = 1;
+                case 1:
+                    if (!true) return [3 /*break*/, 3];
                     loadPixmap(function startProcess(error) {
                         if (error) {
                             console.error(error);
                             return;
                         }
-                        processAddress("QZZFKBIQNIBFNZBEU9DLGKHRMOWWGRDAYBKFAXSBWMDXEEAWIRUDDOVSEEFJ9ECH9VWJAFKLHSFAYUHJCEVZALQHQX");
+                        processAddress(address);
                     });
                     return [4 /*yield*/, sleep(60000)];
-                case 1:
+                case 2:
                     _a.sent();
-                    return [3 /*break*/, 0];
-                case 2: return [2 /*return*/];
+                    return [3 /*break*/, 1];
+                case 3: return [2 /*return*/];
             }
         });
-    });
-}
-function initialize(nodeHost, nodePort) {
-    iota = new IOTA({
-        'host': nodeHost,
-        'port': nodePort
     });
 }
 function loadPixmap(callback) {

@@ -5,28 +5,31 @@ let iota: IOTA;
 let blobSvc = azure.createBlobService();
 let pixmap: Pixmap;
 
-initialize("https://nodes.iota.cafe", 443);
-start();
+let host = "http://node03.iotatoken.nl:15265";
+let port = 15265;
+let address: string; //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
 
-async function start(){
+
+blobSvc.getBlobToText("pixmapcontainer", "iotaReceiveAddress", function (error, text, servRespone) {
+    if (error) { console.log(error) };
+    address = text;
+    start();
+});
+
+async function start() {
+    iota = new IOTA({'host': host, 'port': port});
+
     while (true) {
         loadPixmap(function startProcess(error) {
             if (error) {
                 console.error(error);
                 return;
             }
-            processAddress("QZZFKBIQNIBFNZBEU9DLGKHRMOWWGRDAYBKFAXSBWMDXEEAWIRUDDOVSEEFJ9ECH9VWJAFKLHSFAYUHJCEVZALQHQX");
+            processAddress(address);
         });
-    
+
         await sleep(60000);
     }
-}
-
-function initialize(nodeHost: string, nodePort: number) {
-    iota = new IOTA({
-        'host': nodeHost,
-        'port': nodePort
-    });
 }
 
 function loadPixmap(callback: (error: Error) => void) {
