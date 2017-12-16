@@ -42,15 +42,8 @@ var blobSvc = azure.createBlobService();
 var pixmap;
 var host = process.env.IOTA_HOST;
 var port = process.env.IOTA_PORT;
-var address; //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
-blobSvc.getBlobToText("pixmapcontainer", "iotaReceiveAddress", function (error, text, servRespone) {
-    if (error) {
-        console.log(error);
-    }
-    ;
-    address = text;
-    start();
-});
+var address = process.env.IOTA_ADDRESS; // //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
+start();
 function start() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {

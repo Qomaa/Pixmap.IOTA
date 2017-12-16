@@ -7,13 +7,9 @@ let pixmap: Pixmap;
 
 let host = process.env.IOTA_HOST;
 let port = process.env.IOTA_PORT;
-let address: string; //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
+let address = process.env.IOTA_ADDRESS; // //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
 
-blobSvc.getBlobToText("pixmapcontainer", "iotaReceiveAddress", function (error, text, servRespone) {
-    if (error) { console.log(error) };
-    address = text;
-    start();
-});
+start();
 
 async function start() {
     iota = new IOTA({'host': host, 'port': port});
