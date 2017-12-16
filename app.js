@@ -40,10 +40,17 @@ var azure = require("azure-storage");
 var iota;
 var blobSvc = azure.createBlobService();
 var pixmap;
-var host = "http://node03.iotatoken.nl:15265";
-var port = 15265;
-var address = "CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
-start();
+var host = process.env.IOTA_HOST;
+var port = process.env.IOTA_PORT;
+var address; //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
+blobSvc.getBlobToText("pixmapcontainer", "iotaReceiveAddress", function (error, text, servRespone) {
+    if (error) {
+        console.log(error);
+    }
+    ;
+    address = text;
+    start();
+});
 function start() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {

@@ -5,10 +5,9 @@ let iota: IOTA;
 let blobSvc = azure.createBlobService();
 let pixmap: Pixmap;
 
-let host = "http://node03.iotatoken.nl:15265";
-let port = 15265;
+let host = process.env.IOTA_HOST;
+let port = process.env.IOTA_PORT;
 let address: string; //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
-
 
 blobSvc.getBlobToText("pixmapcontainer", "iotaReceiveAddress", function (error, text, servRespone) {
     if (error) { console.log(error) };
