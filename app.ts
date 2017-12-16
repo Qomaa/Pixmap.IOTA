@@ -78,9 +78,9 @@ function processConfirmedTransaction(transaction) {
     // tag = "UAVAUAVAHAVAZAUAUAPBPB";
     let ascii: string = iota.utils.fromTrytes(tag);
 
-    let trX: number = Number(ascii.substring(0, 2));
-    let trY: number = Number(ascii.substring(2, 4));
-    let rgbHex = ascii.substring(4, 11);
+    let trX: number = Number(ascii.substring(0, 3));
+    let trY: number = Number(ascii.substring(3, 6));
+    let rgbHex = ascii.substring(6, 13);
     let trValue: number = transaction.value;
 
     if (!stringIsRGBHex(rgbHex)) return;
