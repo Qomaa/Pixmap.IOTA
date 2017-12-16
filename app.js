@@ -43,6 +43,9 @@ var pixmap;
 var host = process.env.IOTA_HOST;
 var port = process.env.IOTA_PORT;
 var address = process.env.IOTA_ADDRESS; // //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
+console.log(host);
+console.log(port);
+console.log(address);
 start();
 function start() {
     return __awaiter(this, void 0, void 0, function () {

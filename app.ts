@@ -9,6 +9,10 @@ let host = process.env.IOTA_HOST;
 let port = process.env.IOTA_PORT;
 let address = process.env.IOTA_ADDRESS; // //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
 
+console.log(host);
+console.log(port);
+console.log(address);
+
 start();
 
 async function start() {
