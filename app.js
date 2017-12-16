@@ -42,17 +42,19 @@ var blobSvc = azure.createBlobService();
 var pixmap;
 var host = process.env.IOTA_HOST;
 var port = process.env.IOTA_PORT;
+var provider = host + ":" + port;
 var address = process.env.IOTA_ADDRESS; // //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
 console.log(host);
 console.log(port);
 console.log(address);
+console.log(provider);
 start();
 function start() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    iota = new IOTA({ 'host': host, 'port': port });
+                    iota = new IOTA({ 'provider': provider });
                     _a.label = 1;
                 case 1:
                     if (!true) return [3 /*break*/, 3];

@@ -7,16 +7,18 @@ let pixmap: Pixmap;
 
 let host = process.env.IOTA_HOST;
 let port = process.env.IOTA_PORT;
+let provider = host + ":" + port;
 let address = process.env.IOTA_ADDRESS; // //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
 
 console.log(host);
 console.log(port);
 console.log(address);
+console.log(provider);
 
 start();
 
 async function start() {
-    iota = new IOTA({'host': host, 'port': port});
+    iota = new IOTA({'provider': provider});
 
     while (true) {
         loadPixmap(function startProcess(error) {
