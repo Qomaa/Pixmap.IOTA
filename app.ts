@@ -75,7 +75,7 @@ function processAddress(address: string) {
 
 function processConfirmedTransaction(transaction) {
     let tag: string = (transaction.tag as string).substring(0, 26); //letzen abschneiden, weil Konvertierung ins ASCII nur mit einer geraden Anzahl an Trytes funktioniert.
-    // tag = "UAVAUAVAHAVAZAUAUAPBPB";
+     //tag = "VAVAABVAYAWAHAPBPBNBNBUAUA";
     let ascii: string = iota.utils.fromTrytes(tag);
 
     let trX: number = Number(ascii.substring(0, 3));

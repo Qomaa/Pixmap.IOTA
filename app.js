@@ -108,11 +108,11 @@ function processAddress(address) {
 }
 function processConfirmedTransaction(transaction) {
     var tag = transaction.tag.substring(0, 26); //letzen abschneiden, weil Konvertierung ins ASCII nur mit einer geraden Anzahl an Trytes funktioniert.
-    // tag = "UAVAUAVAHAVAZAUAUAPBPB";
+    //tag = "VAVAABVAYAWAHAPBPBNBNBUAUA";
     var ascii = iota.utils.fromTrytes(tag);
-    var trX = Number(ascii.substring(0, 2));
-    var trY = Number(ascii.substring(2, 4));
-    var rgbHex = ascii.substring(4, 11);
+    var trX = Number(ascii.substring(0, 3));
+    var trY = Number(ascii.substring(3, 6));
+    var rgbHex = ascii.substring(6, 13);
     var trValue = transaction.value;
     if (!stringIsRGBHex(rgbHex))
         return;
