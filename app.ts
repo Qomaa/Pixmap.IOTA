@@ -18,7 +18,7 @@ console.log(provider);
 start();
 
 async function start() {
-    iota = new IOTA({'provider': provider});
+    iota = new IOTA({ 'provider': provider });
 
     while (true) {
         loadPixmap(function startProcess(error) {
@@ -34,7 +34,7 @@ async function start() {
 }
 
 function loadPixmap(callback: (error: Error) => void) {
-    blobSvc.getBlobToText("pixmapcontainer", "pixmapblob", function (error, text, servRespone) {
+    blobSvc.getBlobToText("pixmapcontainer", "pixmapblobtrytes", function (error, text, servRespone) {
         if (error) {
             callback(error);
             return;
@@ -74,14 +74,27 @@ function processAddress(address: string) {
 }
 
 function processConfirmedTransaction(transaction) {
-    let tag: string = (transaction.tag as string).substring(0, 26); //letzen abschneiden, weil Konvertierung ins ASCII nur mit einer geraden Anzahl an Trytes funktioniert.
-     //tag = "VAVAABVAYAWAHAPBPBNBNBUAUA";
-    let ascii: string = iota.utils.fromTrytes(tag);
+    // let ascii: string = iota.utils.fromTrytes(tag);
 
-    let trX: number = Number(ascii.substring(0, 3));
-    let trY: number = Number(ascii.substring(3, 6));
-    let rgbHex = ascii.substring(6, 13);
+    // let trX: number = Number(ascii.substring(0, 3));
+    // let trY: number = Number(ascii.substring(3, 6));
+    // let rgbHex = ascii.substring(6, 13);
+
+    let tag: string = transaction.tag as string;
+    tag = "99999U99IL9999999D9999999C";
     let trValue: number = transaction.value;
+    trValue = 5;
+    let trX: string = tag.substring(0, 2);
+    let trY: string = tag.substring(2, 4);
+    let r: string = tag.substring(4, 6);
+    let g: string = tag.substring(6, 8);
+    let b: string = tag.substring(8, 10);
+    let mes: number = trytesToNumber(tag.substring(10, 18));
+    let link: number = trytesToNumber(tag.substring(18, 26));
+
+    let rgbHex = "#" + pad(trytesToNumber(r).toString(16), 2, "0") +
+        pad(trytesToNumber(g).toString(16), 2, "0") +
+        pad(trytesToNumber(b).toString(16), 2, "0");
 
     if (!stringIsRGBHex(rgbHex)) return;
 
@@ -93,6 +106,8 @@ function processConfirmedTransaction(transaction) {
             pixmap.mapFields[i].value < trValue) {
             pixmap.mapFields[i].color = rgbHex;
             pixmap.mapFields[i].value = trValue;
+            pixmap.mapFields[i].messageRef = mes;
+            pixmap.mapFields[i].linkRef = link;
             mapField = pixmap.mapFields[i];
             break;
         }
@@ -102,7 +117,7 @@ function processConfirmedTransaction(transaction) {
 
     //console.log(pixmap);
 
-    blobSvc.createBlockBlobFromText("pixmapcontainer", "pixmapblob", JSON.stringify(pixmap), function (error, result, servResponse) {
+    blobSvc.createBlockBlobFromText("pixmapcontainer", "pixmapblobtrytes", JSON.stringify(pixmap), function (error, result, servResponse) {
         if (error) {
             console.error(error);
             return;
@@ -116,4 +131,40 @@ function stringIsRGBHex(s: string) {
 
 function sleep(ms): Promise<any> {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function numberToTrytes(input: number): string {
+    const TRYTE_VALUES = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let trytes: string = "";
+    let remainder: number;
+    let quotient = input;
+
+    let digit: string = "";
+
+    while (quotient != 0) {
+
+        remainder = quotient % 27;
+        digit = TRYTE_VALUES.charAt(remainder);
+        trytes = digit + trytes;
+        quotient = Math.floor(quotient / 27);
+    }
+
+    return trytes;
+}
+
+function trytesToNumber(input: string): number {
+    const TRYTE_VALUES = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let result: number = 0;
+    let position: number = 0;
+
+    for (let i = input.length - 1; i >= 0; i--) {
+        result += TRYTE_VALUES.indexOf(input[i]) * Math.pow(27, position);
+        position++;
+    }
+
+    return result;
+}
+
+function pad(value: string, length: number, padchar: string) {
+    return (value.toString().length < length) ? pad(padchar + value, length, padchar) : value;
 }

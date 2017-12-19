@@ -1,5 +1,5 @@
 ﻿class MapField {
-    constructor(x: number, y: number, color: string, value: number, pixmap: Pixmap) {
+    constructor(x: string, y: string, color: string, value: number, pixmap: Pixmap) {
         this.x = x;
         this.y = y;
         this.pixmap = pixmap;
@@ -8,8 +8,10 @@
     }
 
     pixmap: Pixmap;
-    x: number;
-    y: number;   
+    x: string;
+    y: string;   
     color: string;
     value: number;
+    messageRef: number;
+    linkRef: number;
 }
