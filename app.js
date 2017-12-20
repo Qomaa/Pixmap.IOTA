@@ -107,14 +107,10 @@ function processAddress(address) {
     });
 }
 function processConfirmedTransaction(transaction) {
-    // let ascii: string = iota.utils.fromTrytes(tag);
-    // let trX: number = Number(ascii.substring(0, 3));
-    // let trY: number = Number(ascii.substring(3, 6));
-    // let rgbHex = ascii.substring(6, 13);
     var tag = transaction.tag;
-    tag = "99999U99IL9999999D9999999C";
+    //tag = "99999U99IL9999999D9999999C";
     var trValue = transaction.value;
-    trValue = 5;
+    //trValue = 5;
     var trX = tag.substring(0, 2);
     var trY = tag.substring(2, 4);
     var r = tag.substring(4, 6);

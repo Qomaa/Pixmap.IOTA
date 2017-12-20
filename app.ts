@@ -74,16 +74,10 @@ function processAddress(address: string) {
 }
 
 function processConfirmedTransaction(transaction) {
-    // let ascii: string = iota.utils.fromTrytes(tag);
-
-    // let trX: number = Number(ascii.substring(0, 3));
-    // let trY: number = Number(ascii.substring(3, 6));
-    // let rgbHex = ascii.substring(6, 13);
-
     let tag: string = transaction.tag as string;
-    tag = "99999U99IL9999999D9999999C";
+    //tag = "99999U99IL9999999D9999999C";
     let trValue: number = transaction.value;
-    trValue = 5;
+    //trValue = 5;
     let trX: string = tag.substring(0, 2);
     let trY: string = tag.substring(2, 4);
     let r: string = tag.substring(4, 6);
