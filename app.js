@@ -44,10 +44,8 @@ var host = process.env.IOTA_HOST;
 var port = process.env.IOTA_PORT;
 var provider = host + ":" + port;
 var address = process.env.IOTA_ADDRESS; // //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
-console.log(host);
-console.log(port);
-console.log(address);
-console.log(provider);
+console.log("provider: " + provider);
+console.log("address: " + address);
 start();
 function start() {
     return __awaiter(this, void 0, void 0, function () {
@@ -58,6 +56,7 @@ function start() {
                     _a.label = 1;
                 case 1:
                     if (!true) return [3 /*break*/, 3];
+                    log("start run");
                     loadPixmap(function startProcess(error) {
                         if (error) {
                             console.error(error);
@@ -102,6 +101,7 @@ function processAddress(address) {
             confirmedTransactions = transactions.filter(function (item, index) {
                 return isConfirmed[index] === true;
             });
+            log("Confirmed transtions count: " + confirmedTransactions.length);
             confirmedTransactions.forEach(processConfirmedTransaction);
         });
     });
@@ -110,7 +110,7 @@ function processConfirmedTransaction(transaction) {
     var tag = transaction.tag;
     //tag = "99999U99IL9999999D9999999C";
     var trValue = transaction.value;
-    //trValue = 5;
+    //trValue = 99;
     var trX = tag.substring(0, 2);
     var trY = tag.substring(2, 4);
     var r = tag.substring(4, 6);
@@ -138,7 +138,7 @@ function processConfirmedTransaction(transaction) {
     }
     if (mapField == undefined)
         return;
-    //console.log(pixmap);
+    log("Changing field X:" + mapField.x + " Y:" + mapField.y + " (txhash:" + transaction.hash + ")");
     blobSvc.createBlockBlobFromText("pixmapcontainer", "pixmapblobtrytes", JSON.stringify(pixmap), function (error, result, servResponse) {
         if (error) {
             console.error(error);
@@ -178,5 +178,8 @@ function trytesToNumber(input) {
 }
 function pad(value, length, padchar) {
     return (value.toString().length < length) ? pad(padchar + value, length, padchar) : value;
+}
+function log(text) {
+    console.log(new Date().toLocaleString() + ": " + text);
 }
 //# sourceMappingURL=app.js.map

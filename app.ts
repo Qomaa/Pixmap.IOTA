@@ -10,10 +10,9 @@ let port = process.env.IOTA_PORT;
 let provider = host + ":" + port;
 let address = process.env.IOTA_ADDRESS; // //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
 
-console.log(host);
-console.log(port);
-console.log(address);
-console.log(provider);
+
+console.log("provider: " + provider);
+console.log("address: " + address);
 
 start();
 
@@ -21,6 +20,8 @@ async function start() {
     iota = new IOTA({ 'provider': provider });
 
     while (true) {
+        log("start run");
+
         loadPixmap(function startProcess(error) {
             if (error) {
                 console.error(error);
@@ -67,6 +68,8 @@ function processAddress(address: string) {
             confirmedTransactions = transactions.filter((item, index) => {
                 return isConfirmed[index] === true;
             });
+            
+            log("Confirmed transtions count: " + confirmedTransactions.length);
 
             confirmedTransactions.forEach(processConfirmedTransaction);
         })
@@ -77,7 +80,7 @@ function processConfirmedTransaction(transaction) {
     let tag: string = transaction.tag as string;
     //tag = "99999U99IL9999999D9999999C";
     let trValue: number = transaction.value;
-    //trValue = 5;
+    //trValue = 99;
     let trX: string = tag.substring(0, 2);
     let trY: string = tag.substring(2, 4);
     let r: string = tag.substring(4, 6);
@@ -109,7 +112,7 @@ function processConfirmedTransaction(transaction) {
 
     if (mapField == undefined) return;
 
-    //console.log(pixmap);
+    log("Changing field X:" + mapField.x + " Y:" + mapField.y + " (txhash:" + transaction.hash + ")");
 
     blobSvc.createBlockBlobFromText("pixmapcontainer", "pixmapblobtrytes", JSON.stringify(pixmap), function (error, result, servResponse) {
         if (error) {
@@ -161,4 +164,8 @@ function trytesToNumber(input: string): number {
 
 function pad(value: string, length: number, padchar: string) {
     return (value.toString().length < length) ? pad(padchar + value, length, padchar) : value;
+}
+
+function log(text: string) {
+    console.log(new Date().toLocaleString() + ": " + text);
 }
