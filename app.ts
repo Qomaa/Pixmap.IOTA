@@ -30,6 +30,7 @@ async function start() {
             processAddress(address);
         });
 
+        log("sleeping...\r");
         await sleep(60000);
     }
 }
@@ -68,8 +69,8 @@ function processAddress(address: string) {
             confirmedTransactions = transactions.filter((item, index) => {
                 return isConfirmed[index] === true;
             });
-            
-            log("Confirmed transtions count: " + confirmedTransactions.length);
+
+            log("Confirmed transactions count: " + confirmedTransactions.length);
 
             confirmedTransactions.forEach(processConfirmedTransaction);
         })
