@@ -56,7 +56,7 @@ function start() {
                     _a.label = 1;
                 case 1:
                     if (!true) return [3 /*break*/, 3];
-                    log("start run");
+                    log("\r start run");
                     loadPixmap(function startProcess(error) {
                         if (error) {
                             console.error(error);
@@ -64,7 +64,6 @@ function start() {
                         }
                         processAddress(address);
                     });
-                    log("sleeping...\r");
                     return [4 /*yield*/, sleep(60000)];
                 case 2:
                     _a.sent();
