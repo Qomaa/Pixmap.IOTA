@@ -64,6 +64,7 @@ function start() {
                         }
                         processAddress(address);
                     });
+                    log("sleeping...\r");
                     return [4 /*yield*/, sleep(60000)];
                 case 2:
                     _a.sent();
@@ -101,7 +102,7 @@ function processAddress(address) {
             confirmedTransactions = transactions.filter(function (item, index) {
                 return isConfirmed[index] === true;
             });
-            log("Confirmed transtions count: " + confirmedTransactions.length);
+            log("Confirmed transactions count: " + confirmedTransactions.length);
             confirmedTransactions.forEach(processConfirmedTransaction);
         });
     });
