@@ -56,7 +56,7 @@ function start() {
                     _a.label = 1;
                 case 1:
                     if (!true) return [3 /*break*/, 3];
-                    log("\r start run");
+                    log("start run");
                     loadPixmap(function startProcess(error) {
                         if (error) {
                             console.error(error);

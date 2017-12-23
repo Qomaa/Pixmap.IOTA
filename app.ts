@@ -20,7 +20,7 @@ async function start() {
     iota = new IOTA({ 'provider': provider });
 
     while (true) {
-        log("\r start run");
+        log("start run");
 
         loadPixmap(function startProcess(error) {
             if (error) {
