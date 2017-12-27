@@ -92,6 +92,7 @@ function processAddress(address) {
             console.error(error);
             return;
         }
+        log("Transactions count: " + transactions.length);
         transactionsHashes = transactions.map(function (item) { return item.hash; });
         iota.api.getLatestInclusion(transactionsHashes, function checkTransactions(error, isConfirmed) {
             if (error) {

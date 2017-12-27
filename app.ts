@@ -56,6 +56,8 @@ function processAddress(address: string) {
             console.error(error);
             return;
         }
+        
+        log("Transactions count: " + transactions.length);
 
         transactionsHashes = transactions.map(item => item.hash);
 
@@ -64,7 +66,7 @@ function processAddress(address: string) {
                 console.error(error);
                 return;
             }
-
+            
             confirmedTransactions = transactions.filter((item, index) => {
                 return isConfirmed[index] === true;
             });
