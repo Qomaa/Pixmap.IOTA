@@ -9,10 +9,11 @@ let host = process.env.IOTA_HOST;
 let port = process.env.IOTA_PORT;
 let provider = host + ":" + port;
 let address = process.env.IOTA_ADDRESS; // //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
-
+let address2 = process.env.IOTA_ADDRESS2;
 
 console.log("provider: " + provider);
 console.log("address: " + address);
+console.log("address2: " + address);
 
 start();
 
@@ -28,6 +29,9 @@ async function start() {
                 return;
             }
             processAddress(address);
+            if (address2 != undefined && address2 != ""){
+                processAddress(address2);
+            }
         });
 
         await sleep(60000);
@@ -51,12 +55,14 @@ function processAddress(address: string) {
     let confirmedTransactions: any[];
     let transactionsHashes: string[];
 
+    log("processing address: " + address)
+
     iota.api.findTransactionObjects({ "addresses": [address] }, function processTransactions(error: Error, transactions: any[]) {
         if (error) {
             console.error(error);
             return;
         }
-        
+
         log("Transactions count: " + transactions.length);
 
         transactionsHashes = transactions.map(item => item.hash);
@@ -66,7 +72,7 @@ function processAddress(address: string) {
                 console.error(error);
                 return;
             }
-            
+
             confirmedTransactions = transactions.filter((item, index) => {
                 return isConfirmed[index] === true;
             });

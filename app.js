@@ -44,8 +44,10 @@ var host = process.env.IOTA_HOST;
 var port = process.env.IOTA_PORT;
 var provider = host + ":" + port;
 var address = process.env.IOTA_ADDRESS; // //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAFDZHXQZFROQMRYBUUGX9ZMPCJYJPJ9FICQVTZUIVFSKFUPLWJWDEACDAD";
+var address2 = process.env.IOTA_ADDRESS2;
 console.log("provider: " + provider);
 console.log("address: " + address);
+console.log("address2: " + address);
 start();
 function start() {
     return __awaiter(this, void 0, void 0, function () {
@@ -63,6 +65,9 @@ function start() {
                             return;
                         }
                         processAddress(address);
+                        if (address2 != undefined && address2 != "") {
+                            processAddress(address2);
+                        }
                     });
                     return [4 /*yield*/, sleep(60000)];
                 case 2:
@@ -87,6 +92,7 @@ function loadPixmap(callback) {
 function processAddress(address) {
     var confirmedTransactions;
     var transactionsHashes;
+    log("processing address: " + address);
     iota.api.findTransactionObjects({ "addresses": [address] }, function processTransactions(error, transactions) {
         if (error) {
             console.error(error);
