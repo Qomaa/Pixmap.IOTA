@@ -140,7 +140,7 @@ function processConfirmedTransaction(transaction) {
             return;
         }
         if (!found) {
-            util_1.log("Message not found: x:" + message.x + " y:" + message.y + " num:" + message.num);
+            //log("Message not found: x:" + message.x + " y:" + message.y + " num:" + message.num);
             return;
         }
         var mapField;

@@ -113,7 +113,7 @@ function processConfirmedTransaction(transaction) {
             return;
         }
         if (!found) {
-            log("Message not found: x:" + message.x + " y:" + message.y + " num:" + message.num);
+            //log("Message not found: x:" + message.x + " y:" + message.y + " num:" + message.num);
             return;
         }
 
