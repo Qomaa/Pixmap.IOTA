@@ -56,7 +56,7 @@ function processAddress(address: string) {
     let transactionsHashes: string[];
 
     log("processing address: " + address)
-    
+
     iota.api.findTransactionObjects({ "addresses": [address] }, function processTransactions(error: Error, transactions: any[]) {
         if (error) {
             logError(error);
@@ -107,9 +107,13 @@ function processConfirmedTransaction(transaction) {
     if (!stringIsRGBHex(rgbHex)) return;
 
     message = new Message(trX, trY, num, null, null);
-    readMessage(message, function storeMessage(err, resultMessage, resultLink) {
+    readMessage(message, function storeMessage(err, found, resultMessage, resultLink) {
         if (err) {
             logError(err);
+            return;
+        }
+        if (!found) {
+            log("Message not found: x:" + message.x + " y:" + message.y + " num:" + message.num);
             return;
         }
 

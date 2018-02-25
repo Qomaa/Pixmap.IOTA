@@ -46,7 +46,14 @@ function readMessage(message, callback) {
     var projection = { text: 1, link: 1 };
     query("message", q, projection, {}, 1, function (err, res) {
         var m = res;
-        callback(err, m.text, m.link);
+        var found;
+        found = (m != undefined);
+        if (found) {
+            callback(err, found, m.text, m.link);
+        }
+        else {
+            callback(err, found, null, null);
+        }
     });
 }
 exports.readMessage = readMessage;

@@ -134,9 +134,13 @@ function processConfirmedTransaction(transaction) {
     if (!util_1.stringIsRGBHex(rgbHex))
         return;
     message = new db_1.Message(trX, trY, num, null, null);
-    db_1.readMessage(message, function storeMessage(err, resultMessage, resultLink) {
+    db_1.readMessage(message, function storeMessage(err, found, resultMessage, resultLink) {
         if (err) {
             util_1.logError(err);
+            return;
+        }
+        if (!found) {
+            util_1.log("Message not found: x:" + message.x + " y:" + message.y + " num:" + message.num);
             return;
         }
         var mapField;

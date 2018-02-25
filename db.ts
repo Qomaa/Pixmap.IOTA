@@ -44,7 +44,7 @@ function replace(collection: string, query: any, update: any, callback: (error: 
     });
 }
 
-export function readMessage(message: Message, callback: (error: Error, resultMessage: string, resultLink: string) => void) {
+export function readMessage(message: Message, callback: (error: Error, found: boolean, resultMessage: string, resultLink: string) => void) {
     let q = {
         x: message.x,
         y: message.y,
@@ -55,12 +55,21 @@ export function readMessage(message: Message, callback: (error: Error, resultMes
 
     query("message", q, projection, {}, 1, function (err, res) {
         let m: Message = res as Message;
-        callback(err, m.text, m.link);
+        let found: boolean;
+
+        found = (m != undefined);
+
+        if (found) {
+            callback(err, found, m.text, m.link);
+        }
+        else {
+            callback(err, found, null, null);
+        }
     });
 }
 
 export function readMap(callback: (error: Error, result: any) => void) {
-    query("map", {_id: new ObjectID("5a92b5236e31ca1dfc82b83e")}, {id: 0 }, {}, 1, callback);
+    query("map", { _id: new ObjectID("5a92b5236e31ca1dfc82b83e") }, { id: 0 }, {}, 1, callback);
 }
 
 export function writeMap(map: any, callback: (error: Error, result: string) => void) {
