@@ -9,9 +9,9 @@
 
     pixmap: Pixmap;
     x: string;
-    y: string;   
+    y: string;
     color: string;
     value: number;
-    messageRef: number;
-    linkRef: number;
+    message: string;
+    link: string;
 }

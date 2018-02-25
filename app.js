@@ -36,9 +36,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var IOTA = require("iota.lib.js");
-var azure = require("azure-storage");
+var util_1 = require("./util");
+var db_1 = require("./db");
 var iota;
-var blobSvc = azure.createBlobService();
 var pixmap;
 var host = process.env.IOTA_HOST;
 var port = process.env.IOTA_PORT;
@@ -47,7 +47,7 @@ var address = process.env.IOTA_ADDRESS; // //"CCUHXDMMHJMRYPRASPIEUHCAYMTUPCOPAF
 var address2 = process.env.IOTA_ADDRESS2;
 console.log("provider: " + provider);
 console.log("address: " + address);
-console.log("address2: " + address);
+console.log("address2: " + address2);
 start();
 function start() {
     return __awaiter(this, void 0, void 0, function () {
@@ -58,7 +58,7 @@ function start() {
                     _a.label = 1;
                 case 1:
                     if (!true) return [3 /*break*/, 3];
-                    log("start run");
+                    util_1.log("start run");
                     loadPixmap(function startProcess(error) {
                         if (error) {
                             console.error(error);
@@ -69,7 +69,7 @@ function start() {
                             processAddress(address2);
                         }
                     });
-                    return [4 /*yield*/, sleep(60000)];
+                    return [4 /*yield*/, util_1.sleep(60000)];
                 case 2:
                     _a.sent();
                     return [3 /*break*/, 1];
@@ -79,26 +79,26 @@ function start() {
     });
 }
 function loadPixmap(callback) {
-    blobSvc.getBlobToText("pixmapcontainer", "pixmapblobtrytes", function (error, text, servRespone) {
-        if (error) {
-            callback(error);
+    db_1.readMap(function (err, result) {
+        if (err) {
+            callback(err);
             return;
         }
-        pixmap = JSON.parse(text);
-        //console.log(pixmap);
+        pixmap = result;
+        // console.log(result._id);
         callback(null);
     });
 }
 function processAddress(address) {
     var confirmedTransactions;
     var transactionsHashes;
-    log("processing address: " + address);
+    util_1.log("processing address: " + address);
     iota.api.findTransactionObjects({ "addresses": [address] }, function processTransactions(error, transactions) {
         if (error) {
-            console.error(error);
+            util_1.logError(error);
             return;
         }
-        log("Transactions count: " + transactions.length);
+        util_1.log("Transactions count: " + transactions.length);
         transactionsHashes = transactions.map(function (item) { return item.hash; });
         iota.api.getLatestInclusion(transactionsHashes, function checkTransactions(error, isConfirmed) {
             if (error) {
@@ -108,85 +108,58 @@ function processAddress(address) {
             confirmedTransactions = transactions.filter(function (item, index) {
                 return isConfirmed[index] === true;
             });
-            log("Confirmed transactions count: " + confirmedTransactions.length);
+            util_1.log("Confirmed transactions count: " + confirmedTransactions.length);
+            //processConfirmedTransaction("");
             confirmedTransactions.forEach(processConfirmedTransaction);
         });
     });
 }
 function processConfirmedTransaction(transaction) {
     var tag = transaction.tag;
-    //tag = "99999U99IL9999999D9999999C";
+    //let tag = "999AEBILCX999999999999999B";
     var trValue = transaction.value;
-    //trValue = 99;
+    //let trValue = 11;
     var trX = tag.substring(0, 2);
     var trY = tag.substring(2, 4);
     var r = tag.substring(4, 6);
     var g = tag.substring(6, 8);
     var b = tag.substring(8, 10);
-    var mes = trytesToNumber(tag.substring(10, 18));
-    var link = trytesToNumber(tag.substring(18, 26));
-    var rgbHex = "#" + pad(trytesToNumber(r).toString(16), 2, "0") +
-        pad(trytesToNumber(g).toString(16), 2, "0") +
-        pad(trytesToNumber(b).toString(16), 2, "0");
-    if (!stringIsRGBHex(rgbHex))
+    var num = util_1.trytesToNumber(tag.substring(10, 26));
+    var messageText;
+    var link;
+    var message;
+    var rgbHex = "#" + util_1.pad(util_1.trytesToNumber(r).toString(16), 2, "0") +
+        util_1.pad(util_1.trytesToNumber(g).toString(16), 2, "0") +
+        util_1.pad(util_1.trytesToNumber(b).toString(16), 2, "0");
+    if (!util_1.stringIsRGBHex(rgbHex))
         return;
-    var mapField;
-    for (var i = 0; i < pixmap.mapFields.length; i++) {
-        if (pixmap.mapFields[i].x == trX &&
-            pixmap.mapFields[i].y == trY &&
-            pixmap.mapFields[i].value < trValue) {
-            pixmap.mapFields[i].color = rgbHex;
-            pixmap.mapFields[i].value = trValue;
-            pixmap.mapFields[i].messageRef = mes;
-            pixmap.mapFields[i].linkRef = link;
-            mapField = pixmap.mapFields[i];
-            break;
-        }
-    }
-    if (mapField == undefined)
-        return;
-    log("Changing field X:" + mapField.x + " Y:" + mapField.y + " (txhash:" + transaction.hash + ")");
-    blobSvc.createBlockBlobFromText("pixmapcontainer", "pixmapblobtrytes", JSON.stringify(pixmap), function (error, result, servResponse) {
-        if (error) {
-            console.error(error);
+    message = new db_1.Message(trX, trY, num, null, null);
+    db_1.readMessage(message, function storeMessage(err, resultMessage, resultLink) {
+        if (err) {
+            util_1.logError(err);
             return;
         }
+        var mapField;
+        for (var i = 0; i < pixmap.mapFields.length; i++) {
+            if (pixmap.mapFields[i].x == trX &&
+                pixmap.mapFields[i].y == trY &&
+                pixmap.mapFields[i].value < trValue) {
+                pixmap.mapFields[i].color = rgbHex;
+                pixmap.mapFields[i].value = trValue;
+                pixmap.mapFields[i].message = resultMessage;
+                pixmap.mapFields[i].link = resultLink;
+                mapField = pixmap.mapFields[i];
+                break;
+            }
+        }
+        if (mapField == undefined)
+            return;
+        util_1.log("Changing field X:" + mapField.x + " Y:" + mapField.y + " message:" + mapField.message + +" link: " + mapField.link + " (txhash:" + transaction.hash + ")");
+        db_1.writeMap(pixmap, function (err, result) {
+            if (err) {
+                util_1.logError(err);
+            }
+        });
     });
-}
-function stringIsRGBHex(s) {
-    return /^#[0-9A-F]{6}$/i.test(s);
-}
-function sleep(ms) {
-    return new Promise(function (resolve) { return setTimeout(resolve, ms); });
-}
-function numberToTrytes(input) {
-    var TRYTE_VALUES = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    var trytes = "";
-    var remainder;
-    var quotient = input;
-    var digit = "";
-    while (quotient != 0) {
-        remainder = quotient % 27;
-        digit = TRYTE_VALUES.charAt(remainder);
-        trytes = digit + trytes;
-        quotient = Math.floor(quotient / 27);
-    }
-    return trytes;
-}
-function trytesToNumber(input) {
-    var TRYTE_VALUES = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    var result = 0;
-    var position = 0;
-    for (var i = input.length - 1; i >= 0; i--) {
-        result += TRYTE_VALUES.indexOf(input[i]) * Math.pow(27, position);
-        position++;
-    }
-    return result;
-}
-function pad(value, length, padchar) {
-    return (value.toString().length < length) ? pad(padchar + value, length, padchar) : value;
-}
-function log(text) {
-    console.log(new Date().toLocaleString() + ": " + text);
 }
 //# sourceMappingURL=app.js.map

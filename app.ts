@@ -1,8 +1,8 @@
 ﻿import IOTA = require('iota.lib.js');
-import azure = require('azure-storage');
+import { log, sleep, trytesToNumber, pad, stringIsRGBHex, logError } from "./util";
+import { readMap, readMessage, Message, writeMap } from './db';
 
 let iota: IOTA;
-let blobSvc = azure.createBlobService();
 let pixmap: Pixmap;
 
 let host = process.env.IOTA_HOST;
@@ -13,7 +13,7 @@ let address2 = process.env.IOTA_ADDRESS2;
 
 console.log("provider: " + provider);
 console.log("address: " + address);
-console.log("address2: " + address);
+console.log("address2: " + address2);
 
 start();
 
@@ -29,7 +29,7 @@ async function start() {
                 return;
             }
             processAddress(address);
-            if (address2 != undefined && address2 != ""){
+            if (address2 != undefined && address2 != "") {
                 processAddress(address2);
             }
         });
@@ -39,16 +39,16 @@ async function start() {
 }
 
 function loadPixmap(callback: (error: Error) => void) {
-    blobSvc.getBlobToText("pixmapcontainer", "pixmapblobtrytes", function (error, text, servRespone) {
-        if (error) {
-            callback(error);
+    readMap(function (err, result) {
+        if (err) {
+            callback(err);
             return;
         }
 
-        pixmap = JSON.parse(text);
-        //console.log(pixmap);
+        pixmap = result;
+        // console.log(result._id);
         callback(null);
-    })
+    });
 }
 
 function processAddress(address: string) {
@@ -56,10 +56,10 @@ function processAddress(address: string) {
     let transactionsHashes: string[];
 
     log("processing address: " + address)
-
+    
     iota.api.findTransactionObjects({ "addresses": [address] }, function processTransactions(error: Error, transactions: any[]) {
         if (error) {
-            console.error(error);
+            logError(error);
             return;
         }
 
@@ -79,6 +79,7 @@ function processAddress(address: string) {
 
             log("Confirmed transactions count: " + confirmedTransactions.length);
 
+            //processConfirmedTransaction("");
             confirmedTransactions.forEach(processConfirmedTransaction);
         })
     })
@@ -86,16 +87,18 @@ function processAddress(address: string) {
 
 function processConfirmedTransaction(transaction) {
     let tag: string = transaction.tag as string;
-    //tag = "99999U99IL9999999D9999999C";
+    //let tag = "999AEBILCX999999999999999B";
     let trValue: number = transaction.value;
-    //trValue = 99;
+    //let trValue = 11;
     let trX: string = tag.substring(0, 2);
     let trY: string = tag.substring(2, 4);
     let r: string = tag.substring(4, 6);
     let g: string = tag.substring(6, 8);
     let b: string = tag.substring(8, 10);
-    let mes: number = trytesToNumber(tag.substring(10, 18));
-    let link: number = trytesToNumber(tag.substring(18, 26));
+    let num: number = trytesToNumber(tag.substring(10, 26));
+    let messageText: string;
+    let link: string;
+    let message: Message;
 
     let rgbHex = "#" + pad(trytesToNumber(r).toString(16), 2, "0") +
         pad(trytesToNumber(g).toString(16), 2, "0") +
@@ -103,77 +106,35 @@ function processConfirmedTransaction(transaction) {
 
     if (!stringIsRGBHex(rgbHex)) return;
 
-    let mapField: MapField;
-
-    for (let i = 0; i < pixmap.mapFields.length; i++) {
-        if (pixmap.mapFields[i].x == trX &&
-            pixmap.mapFields[i].y == trY &&
-            pixmap.mapFields[i].value < trValue) {
-            pixmap.mapFields[i].color = rgbHex;
-            pixmap.mapFields[i].value = trValue;
-            pixmap.mapFields[i].messageRef = mes;
-            pixmap.mapFields[i].linkRef = link;
-            mapField = pixmap.mapFields[i];
-            break;
-        }
-    }
-
-    if (mapField == undefined) return;
-
-    log("Changing field X:" + mapField.x + " Y:" + mapField.y + " (txhash:" + transaction.hash + ")");
-
-    blobSvc.createBlockBlobFromText("pixmapcontainer", "pixmapblobtrytes", JSON.stringify(pixmap), function (error, result, servResponse) {
-        if (error) {
-            console.error(error);
+    message = new Message(trX, trY, num, null, null);
+    readMessage(message, function storeMessage(err, resultMessage, resultLink) {
+        if (err) {
+            logError(err);
             return;
         }
+
+        let mapField: MapField;
+        for (let i = 0; i < pixmap.mapFields.length; i++) {
+            if (pixmap.mapFields[i].x == trX &&
+                pixmap.mapFields[i].y == trY &&
+                pixmap.mapFields[i].value < trValue) {
+                pixmap.mapFields[i].color = rgbHex;
+                pixmap.mapFields[i].value = trValue;
+                pixmap.mapFields[i].message = resultMessage;
+                pixmap.mapFields[i].link = resultLink;
+                mapField = pixmap.mapFields[i];
+                break;
+            }
+        }
+
+        if (mapField == undefined) return;
+
+        log("Changing field X:" + mapField.x + " Y:" + mapField.y + " message:" + mapField.message + + " link: " + mapField.link + " (txhash:" + transaction.hash + ")");
+
+        writeMap(pixmap, function (err, result) {
+            if (err) {
+                logError(err);
+            }
+        });
     });
-}
-
-function stringIsRGBHex(s: string) {
-    return /^#[0-9A-F]{6}$/i.test(s);
-}
-
-function sleep(ms): Promise<any> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function numberToTrytes(input: number): string {
-    const TRYTE_VALUES = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let trytes: string = "";
-    let remainder: number;
-    let quotient = input;
-
-    let digit: string = "";
-
-    while (quotient != 0) {
-
-        remainder = quotient % 27;
-        digit = TRYTE_VALUES.charAt(remainder);
-        trytes = digit + trytes;
-        quotient = Math.floor(quotient / 27);
-    }
-
-    return trytes;
-}
-
-function trytesToNumber(input: string): number {
-    const TRYTE_VALUES = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let result: number = 0;
-    let position: number = 0;
-
-    for (let i = input.length - 1; i >= 0; i--) {
-        result += TRYTE_VALUES.indexOf(input[i]) * Math.pow(27, position);
-        position++;
-    }
-
-    return result;
-}
-
-function pad(value: string, length: number, padchar: string) {
-    return (value.toString().length < length) ? pad(padchar + value, length, padchar) : value;
-}
-
-function log(text: string) {
-    console.log(new Date().toLocaleString() + ": " + text);
 }
