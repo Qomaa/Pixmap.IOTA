@@ -55,25 +55,31 @@ function start() {
             switch (_a.label) {
                 case 0:
                     iota = new IOTA({ 'provider': provider });
-                    _a.label = 1;
-                case 1:
-                    if (!true) return [3 /*break*/, 3];
-                    util_1.log("start run");
                     loadPixmap(function startProcess(error) {
                         if (error) {
-                            console.error(error);
+                            util_1.logError(error);
                             return;
                         }
-                        processAddress(address);
-                        if (address2 != undefined && address2 != "") {
-                            processAddress(address2);
-                        }
                     });
-                    return [4 /*yield*/, util_1.sleep(60000)];
+                    _a.label = 1;
+                case 1:
+                    if (!true) return [3 /*break*/, 5];
+                    if (!(pixmap == undefined)) return [3 /*break*/, 3];
+                    return [4 /*yield*/, util_1.sleep(100)];
                 case 2:
                     _a.sent();
                     return [3 /*break*/, 1];
-                case 3: return [2 /*return*/];
+                case 3:
+                    util_1.log("start run");
+                    processAddress(address);
+                    if (address2 != undefined && address2 != "") {
+                        processAddress(address2);
+                    }
+                    return [4 /*yield*/, util_1.sleep(60000)];
+                case 4:
+                    _a.sent();
+                    return [3 /*break*/, 1];
+                case 5: return [2 /*return*/];
             }
         });
     });

@@ -20,19 +20,25 @@ start();
 async function start() {
     iota = new IOTA({ 'provider': provider });
 
+    loadPixmap(function startProcess(error) {
+        if (error) {
+            logError(error);
+            return;
+        }
+    });
+
     while (true) {
+        if (pixmap == undefined){
+            await sleep(100);
+            continue;
+        } 
+        
         log("start run");
 
-        loadPixmap(function startProcess(error) {
-            if (error) {
-                console.error(error);
-                return;
-            }
-            processAddress(address);
-            if (address2 != undefined && address2 != "") {
-                processAddress(address2);
-            }
-        });
+        processAddress(address);
+        if (address2 != undefined && address2 != "") {
+            processAddress(address2);
+        }
 
         await sleep(60000);
     }

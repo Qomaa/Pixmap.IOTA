@@ -12,7 +12,16 @@
             "program": "${workspaceFolder}\\app.js",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
-            ]
+            ],
+            "env": {
+                "NODE_ENV": "development",
+                "IOTA_HOST": "http://iota.show",
+                "IOTA_PORT": "14265",
+                "DB_CONNECTION_STRING": "mongodb://127.0.0.1:27017",
+                "DB_NAME": "pixdb",
+                "IOTA_ADDRESS2": "",
+                "IOTA_ADDRESS": "9FZEODJXTEANNYJBRCPZA9FJNTHNYYYWSFZCEKCGBO9EEQITJTIKLKWOSYQTZNKMNEXMBOMHIBZWYOFQBW9DBMZFM9"
+            }
         }
     ]
 }
