@@ -164,7 +164,7 @@ function processConfirmedTransaction(transaction) {
         }
         if (mapField == undefined)
             return;
-        util_1.log("Changing field X:" + mapField.x + " Y:" + mapField.y + " message:" + mapField.message + +" link: " + mapField.link + " (txhash:" + transaction.hash + ")");
+        util_1.log("Changing field X:" + mapField.x + " Y:" + mapField.y + " message:" + mapField.message + " link: " + mapField.link + " (txhash:" + transaction.hash + ")");
         db_1.writeMap(pixmap, function (err, result) {
             if (err) {
                 util_1.logError(err);

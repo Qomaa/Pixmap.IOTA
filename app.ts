@@ -32,7 +32,7 @@ async function start() {
             await sleep(100);
             continue;
         } 
-        
+
         log("start run");
 
         processAddress(address);
@@ -139,7 +139,7 @@ function processConfirmedTransaction(transaction) {
 
         if (mapField == undefined) return;
 
-        log("Changing field X:" + mapField.x + " Y:" + mapField.y + " message:" + mapField.message + + " link: " + mapField.link + " (txhash:" + transaction.hash + ")");
+        log("Changing field X:" + mapField.x + " Y:" + mapField.y + " message:" + mapField.message + " link: " + mapField.link + " (txhash:" + transaction.hash + ")");
 
         writeMap(pixmap, function (err, result) {
             if (err) {
