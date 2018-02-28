@@ -60,9 +60,4 @@ typings/
 
 # dotenv environment variables file
 .env
-/.vs
 /.vscode
-/obj/Debug
-/Web.Pixmap.njsproj.user
-/bin
-/store
