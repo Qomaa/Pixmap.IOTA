@@ -52,7 +52,7 @@ function readMessage(message, callback) {
             callback(err, found, m.text, m.link);
         }
         else {
-            callback(err, found, null, null);
+            callback(err, found, "", "");
         }
     });
 }

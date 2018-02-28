@@ -63,7 +63,7 @@ export function readMessage(message: Message, callback: (error: Error, found: bo
             callback(err, found, m.text, m.link);
         }
         else {
-            callback(err, found, null, null);
+            callback(err, found, "", "");
         }
     });
 }

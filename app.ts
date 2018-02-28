@@ -118,10 +118,11 @@ function processConfirmedTransaction(transaction) {
             logError(err);
             return;
         }
-        if (!found) {
-            //log("Message not found: x:" + message.x + " y:" + message.y + " num:" + message.num);
-            return;
-        }
+        // if (!found) {
+        //     //log("Message not found: x:" + message.x + " y:" + message.y + " num:" + message.num);
+        //     resultMessage = "";
+
+        // }
 
         let mapField: MapField;
         for (let i = 0; i < pixmap.mapFields.length; i++) {

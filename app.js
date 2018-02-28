@@ -145,10 +145,10 @@ function processConfirmedTransaction(transaction) {
             util_1.logError(err);
             return;
         }
-        if (!found) {
-            //log("Message not found: x:" + message.x + " y:" + message.y + " num:" + message.num);
-            return;
-        }
+        // if (!found) {
+        //     //log("Message not found: x:" + message.x + " y:" + message.y + " num:" + message.num);
+        //     resultMessage = "";
+        // }
         var mapField;
         for (var i = 0; i < pixmap.mapFields.length; i++) {
             if (pixmap.mapFields[i].x == trX &&
