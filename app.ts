@@ -93,9 +93,9 @@ function processAddress(address: string) {
 
 function processConfirmedTransaction(transaction) {
     let tag: string = transaction.tag as string;
-    //let tag = "999AEBILCX999999999999999B";
+    tag = "9C999999999999999999999999";
     let trValue: number = transaction.value;
-    //let trValue = 11;
+    trValue = 2;
     let trX: string = tag.substring(0, 2);
     let trY: string = tag.substring(2, 4);
     let r: string = tag.substring(4, 6);
@@ -129,10 +129,13 @@ function processConfirmedTransaction(transaction) {
             if (pixmap.mapFields[i].x == trX &&
                 pixmap.mapFields[i].y == trY &&
                 pixmap.mapFields[i].value < trValue) {
+
                 pixmap.mapFields[i].color = rgbHex;
                 pixmap.mapFields[i].value = trValue;
                 pixmap.mapFields[i].message = resultMessage;
                 pixmap.mapFields[i].link = resultLink;
+                pixmap.mapFields[i].transaction = transaction.hash;
+                pixmap.mapFields[i].timestamp = new Date().getTime().toString();
                 mapField = pixmap.mapFields[i];
                 break;
             }

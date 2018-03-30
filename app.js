@@ -122,9 +122,9 @@ function processAddress(address) {
 }
 function processConfirmedTransaction(transaction) {
     var tag = transaction.tag;
-    //let tag = "999AEBILCX999999999999999B";
+    tag = "9C999999999999999999999999";
     var trValue = transaction.value;
-    //let trValue = 11;
+    trValue = 2;
     var trX = tag.substring(0, 2);
     var trY = tag.substring(2, 4);
     var r = tag.substring(4, 6);
@@ -158,6 +158,8 @@ function processConfirmedTransaction(transaction) {
                 pixmap.mapFields[i].value = trValue;
                 pixmap.mapFields[i].message = resultMessage;
                 pixmap.mapFields[i].link = resultLink;
+                pixmap.mapFields[i].transaction = transaction.hash;
+                pixmap.mapFields[i].timestamp = new Date().getTime().toString();
                 mapField = pixmap.mapFields[i];
                 break;
             }

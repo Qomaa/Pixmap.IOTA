@@ -73,7 +73,6 @@ export function readMap(callback: (error: Error, result: any) => void) {
 }
 
 export function writeMap(map: any, callback: (error: Error, result: string) => void) {
-    //let q = { _id: new ObjectID("5a92b5236e31ca1dfc82b83e") }; //mieser "workaround"/faulheit
     replace("map", {}, map, callback);
 }
 

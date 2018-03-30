@@ -62,7 +62,6 @@ function readMap(callback) {
 }
 exports.readMap = readMap;
 function writeMap(map, callback) {
-    //let q = { _id: new ObjectID("5a92b5236e31ca1dfc82b83e") }; //mieser "workaround"/faulheit
     replace("map", {}, map, callback);
 }
 exports.writeMap = writeMap;

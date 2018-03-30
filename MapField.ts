@@ -14,4 +14,6 @@
     value: number;
     message: string;
     link: string;
+    transaction: string;
+    timestamp: string;
 }
