@@ -122,9 +122,9 @@ function processAddress(address) {
 }
 function processConfirmedTransaction(transaction) {
     var tag = transaction.tag;
-    tag = "9C999999999999999999999999";
+    // tag = "9C999999999999999999999999";
     var trValue = transaction.value;
-    trValue = 2;
+    // trValue = 2;
     var trX = tag.substring(0, 2);
     var trY = tag.substring(2, 4);
     var r = tag.substring(4, 6);

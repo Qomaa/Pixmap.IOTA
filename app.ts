@@ -93,9 +93,9 @@ function processAddress(address: string) {
 
 function processConfirmedTransaction(transaction) {
     let tag: string = transaction.tag as string;
-    tag = "9C999999999999999999999999";
+    // tag = "9C999999999999999999999999";
     let trValue: number = transaction.value;
-    trValue = 2;
+    // trValue = 2;
     let trX: string = tag.substring(0, 2);
     let trY: string = tag.substring(2, 4);
     let r: string = tag.substring(4, 6);
