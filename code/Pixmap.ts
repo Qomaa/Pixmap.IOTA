@@ -1,4 +1,6 @@
-﻿class Pixmap{
+import { MapField } from "./MapField";
+
+export class Pixmap{
     constructor() { }
 
     mapFields: MapField[] = new Array<MapField>();

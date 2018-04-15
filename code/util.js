@@ -1,51 +1,49 @@
-export function stringIsRGBHex(s: string) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+function stringIsRGBHex(s) {
     return /^#[0-9A-F]{6}$/i.test(s);
 }
-
-export function sleep(ms): Promise<any> {
+exports.stringIsRGBHex = stringIsRGBHex;
+function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-
-export function numberToTrytes(input: number): string {
+exports.sleep = sleep;
+function numberToTrytes(input) {
     const TRYTE_VALUES = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let trytes: string = "";
-    let remainder: number;
+    let trytes = "";
+    let remainder;
     let quotient = input;
-
-    let digit: string = "";
-
+    let digit = "";
     while (quotient != 0) {
-
         remainder = quotient % 27;
         digit = TRYTE_VALUES.charAt(remainder);
         trytes = digit + trytes;
         quotient = Math.floor(quotient / 27);
     }
-
     return trytes;
 }
-
-export function trytesToNumber(input: string): number {
+exports.numberToTrytes = numberToTrytes;
+function trytesToNumber(input) {
     const TRYTE_VALUES = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let result: number = 0;
-    let position: number = 0;
-
+    let result = 0;
+    let position = 0;
     for (let i = input.length - 1; i >= 0; i--) {
         result += TRYTE_VALUES.indexOf(input[i]) * Math.pow(27, position);
         position++;
     }
-
     return result;
 }
-
-export function pad(value: string, length: number, padchar: string) {
+exports.trytesToNumber = trytesToNumber;
+function pad(value, length, padchar) {
     return (value.toString().length < length) ? pad(padchar + value, length, padchar) : value;
 }
-
-export function log(text: string) {
+exports.pad = pad;
+function log(text) {
     console.log(new Date().toLocaleString() + ": " + text);
 }
-
-export function logError(error) {
+exports.log = log;
+function logError(error) {
     console.error(new Date().toLocaleString() + " : " + error);
 }
+exports.logError = logError;
+//# sourceMappingURL=util.js.map

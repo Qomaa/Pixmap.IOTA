@@ -1,9 +1,15 @@
 ﻿import IOTA = require('iota.lib.js');
-import { log, sleep, trytesToNumber, pad, stringIsRGBHex, logError } from "./util";
-import { readMap, readMessage, Message, writeMap } from './db';
+import { log, sleep, trytesToNumber, pad, stringIsRGBHex, logError } from "./code/util";
+import { readMap, readMessage, updateMapField, writeProcessedTransaction, readProcessedTransactions, readBatch, connectDB } from './code/db';
+import { Pixmap } from "./code/Pixmap";
+import { ProcessedTransaction } from "./code/ProcessedTransaction";
+import { Batch } from "./code/Batch";
+import { MapField } from "./code/MapField";
+import { Message } from "./code/Message";
 
 let iota: IOTA;
 let pixmap: Pixmap;
+let processedTransactions: ProcessedTransaction[] = [];
 
 let host = process.env.IOTA_HOST;
 let port = process.env.IOTA_PORT;
@@ -20,19 +26,9 @@ start();
 async function start() {
     iota = new IOTA({ 'provider': provider });
 
-    loadPixmap(function startProcess(error) {
-        if (error) {
-            logError(error);
-            return;
-        }
-    });
+    await init();
 
     while (true) {
-        if (pixmap == undefined){
-            await sleep(100);
-            continue;
-        } 
-
         log("start run");
 
         processAddress(address);
@@ -44,17 +40,14 @@ async function start() {
     }
 }
 
-function loadPixmap(callback: (error: Error) => void) {
-    readMap(function (err, result) {
-        if (err) {
-            callback(err);
-            return;
-        }
-
-        pixmap = result;
-        // console.log(result._id);
-        callback(null);
-    });
+async function init() {
+    try {
+        await connectDB();
+        pixmap = await readMap();
+        processedTransactions = await readProcessedTransactions();
+    } catch (e) {
+        logError(e);
+    }
 }
 
 function processAddress(address: string) {
@@ -71,6 +64,14 @@ function processAddress(address: string) {
 
         log("Transactions count: " + transactions.length);
 
+        if (processedTransactions != undefined) {
+            transactions = transactions.filter(tx => {
+                return processedTransactions.find(ptx => ptx.hash === tx.hash) === undefined;
+            });
+        }
+
+        log("Processing " + transactions.length + " transactions...");
+
         transactionsHashes = transactions.map(item => item.hash);
 
         iota.api.getLatestInclusion(transactionsHashes, function checkTransactions(error: Error, isConfirmed: any[]) {
@@ -79,19 +80,78 @@ function processAddress(address: string) {
                 return;
             }
 
-            confirmedTransactions = transactions.filter((item, index) => {
-                return isConfirmed[index] === true;
+            confirmedTransactions = transactions.filter((item, index) => isConfirmed[index]);
+
+            log("New confirmed transactions: " + confirmedTransactions.length);
+
+            // transactions[0].tag  = "ZZ99999999999999999999999CO";
+            // processBatch(transactions[0]);
+
+            confirmedTransactions.forEach(async tx => {
+                try {
+                    if ((tx.tag as string).startsWith("ZZ")) {
+                        await processBatch(tx);
+                    } else {
+                        await processSingleField(tx);
+                    }
+                    addProcessedTransaction(tx);
+                } catch (e) {
+                    logError(e);
+                }
             });
-
-            log("Confirmed transactions count: " + confirmedTransactions.length);
-
-            //processConfirmedTransaction("");
-            confirmedTransactions.forEach(processConfirmedTransaction);
-        })
-    })
+        });
+    });
 }
 
-function processConfirmedTransaction(transaction) {
+async function processBatch(transaction) {
+    let tag: string = transaction.tag as string;
+    let trValue: number = transaction.value;
+    trValue = 999;
+    // tag = "ZZ999999999999999999999999B";
+    let minimumBatchValue: number = 0;
+    let fieldToChange: MapField;
+    let pixmapChanged: boolean = false;
+    let batch: Batch;
+    let fieldsToChange: MapField[] = [];
+    let i: number = 0;
+
+    batch = await readBatch(tag);
+    if (batch === null) {
+        addProcessedTransaction(transaction);
+        return;
+    }
+
+    batch.changedFields.forEach(async batchField => {
+        fieldToChange = pixmap.mapFields.find(originalField => originalField.x === batchField.x && originalField.y === batchField.y);
+        if (fieldToChange === undefined) return;
+
+        //Prüfen, ob das zu ändernde Feld des Batches genug Wert hat.
+        if (batchField.value < fieldToChange.value) {
+            log(++i + "Batch-Field (" + batchField.x + "/" + batchField.y + ") doesn't have enough value. Has: " + batchField.value + " Required at least: " + fieldToChange.value + 1);
+            return;
+        }
+
+        //Prüfen, ob die Transaktion genug Wert hat um Feld zu ändern.
+        trValue = trValue - batchField.value;
+        if (trValue < 0) {
+            log(++i + "Transaction has not enough value to set all fields.");
+            return;
+        }
+
+        //Die Transaktion hat (noch) für dieses Feld genug Wert, also ändern.
+        fieldToChange.color = batchField.color;
+        fieldToChange.link = batchField.link;
+        fieldToChange.message = batchField.message
+        fieldToChange.value = batchField.value;
+        fieldToChange.transaction = transaction.hash;
+        fieldToChange.timestamp = new Date().getTime().toString();
+
+        await updateMapField(fieldToChange);
+        log(++i + ": Batch: Changed field X:" + fieldToChange.x + " Y:" + fieldToChange.y + " message:" + fieldToChange.message + " link: " + fieldToChange.link);
+    });
+}
+
+async function processSingleField(transaction) {
     let tag: string = transaction.tag as string;
     // tag = "9C999999999999999999999999";
     let trValue: number = transaction.value;
@@ -102,53 +162,41 @@ function processConfirmedTransaction(transaction) {
     let g: string = tag.substring(6, 8);
     let b: string = tag.substring(8, 10);
     let num: number = trytesToNumber(tag.substring(10, 26));
-    let messageText: string;
-    let link: string;
     let message: Message;
 
     let rgbHex = "#" + pad(trytesToNumber(r).toString(16), 2, "0") +
         pad(trytesToNumber(g).toString(16), 2, "0") +
         pad(trytesToNumber(b).toString(16), 2, "0");
 
-    if (!stringIsRGBHex(rgbHex)) return;
+    if (!stringIsRGBHex(rgbHex)) {
+        addProcessedTransaction(transaction);
+        return;
+    }
 
-    message = new Message(trX, trY, num, null, null);
-    readMessage(message, function storeMessage(err, found, resultMessage, resultLink) {
-        if (err) {
-            logError(err);
-            return;
+    message = await readMessage(new Message(trX, trY, num, null, null));
+    if (message === null) {
+        addProcessedTransaction(transaction);
+        return;
+    }
+
+    pixmap.mapFields.forEach(async field => {
+        if (field.x === trX &&
+            field.y === trY &&
+            field.value < trValue) {
+
+            let newField = new MapField(trX, trY, rgbHex, trValue, null);
+            newField.message = message.text;
+            newField.link = message.link;
+            newField.transaction = transaction.hash;
+            newField.timestamp = new Date().getTime().toString();
+            await updateMapField(newField);
+            log("Changed field X:" + field.x + " Y:" + field.y + " message:" + message.text + " link: " + message.link + " (txhash: " + transaction.hash + ")");
         }
-        // if (!found) {
-        //     //log("Message not found: x:" + message.x + " y:" + message.y + " num:" + message.num);
-        //     resultMessage = "";
-
-        // }
-
-        let mapField: MapField;
-        for (let i = 0; i < pixmap.mapFields.length; i++) {
-            if (pixmap.mapFields[i].x == trX &&
-                pixmap.mapFields[i].y == trY &&
-                pixmap.mapFields[i].value < trValue) {
-
-                pixmap.mapFields[i].color = rgbHex;
-                pixmap.mapFields[i].value = trValue;
-                pixmap.mapFields[i].message = resultMessage;
-                pixmap.mapFields[i].link = resultLink;
-                pixmap.mapFields[i].transaction = transaction.hash;
-                pixmap.mapFields[i].timestamp = new Date().getTime().toString();
-                mapField = pixmap.mapFields[i];
-                break;
-            }
-        }
-
-        if (mapField == undefined) return;
-
-        log("Changing field X:" + mapField.x + " Y:" + mapField.y + " message:" + mapField.message + " link: " + mapField.link + " (txhash:" + transaction.hash + ")");
-
-        writeMap(pixmap, function (err, result) {
-            if (err) {
-                logError(err);
-            }
-        });
     });
+}
+
+async function addProcessedTransaction(transaction) {
+    let ptx = new ProcessedTransaction(transaction.tag, transaction.hash);
+    await writeProcessedTransaction(ptx);
+    processedTransactions.push(ptx);
 }
