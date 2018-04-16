@@ -80,11 +80,12 @@ function processAddress(address) {
             // processBatch(transactions[0]);
             confirmedTransactions.forEach((tx) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    if (tx.tag.startsWith("ZZ")) {
-                        yield processBatch(tx);
+                    let tag = getTag(tx);
+                    if (tag.startsWith("ZZ")) {
+                        yield processBatch(tx, tag);
                     }
                     else {
-                        yield processSingleField(tx);
+                        yield processSingleField(tx, tag);
                     }
                     addProcessedTransaction(tx);
                 }
@@ -95,9 +96,8 @@ function processAddress(address) {
         });
     });
 }
-function processBatch(transaction) {
+function processBatch(transaction, tag) {
     return __awaiter(this, void 0, void 0, function* () {
-        let tag = transaction.tag;
         let trValue = transaction.value;
         trValue = 999;
         // tag = "ZZ999999999999999999999999B";
@@ -139,9 +139,8 @@ function processBatch(transaction) {
         }));
     });
 }
-function processSingleField(transaction) {
+function processSingleField(transaction, tag) {
     return __awaiter(this, void 0, void 0, function* () {
-        let tag = transaction.tag;
         // tag = "9C999999999999999999999999";
         let trValue = transaction.value;
         // trValue = 2;
@@ -150,14 +149,21 @@ function processSingleField(transaction) {
         let r = tag.substring(4, 6);
         let g = tag.substring(6, 8);
         let b = tag.substring(8, 10);
-        let num = util_1.trytesToNumber(tag.substring(10, 26));
         let message;
+        let num = util_1.trytesToNumber(tag.substring(10, 26));
         let rgbHex = "#" + util_1.pad(util_1.trytesToNumber(r).toString(16), 2, "0") +
             util_1.pad(util_1.trytesToNumber(g).toString(16), 2, "0") +
             util_1.pad(util_1.trytesToNumber(b).toString(16), 2, "0");
         if (!util_1.stringIsRGBHex(rgbHex)) {
-            addProcessedTransaction(transaction);
-            return;
+            tag = util_1.fromTrytes(transaction.signatureMessageFragment);
+            rgbHex = "#" + util_1.pad(util_1.trytesToNumber(r).toString(16), 2, "0") +
+                util_1.pad(util_1.trytesToNumber(g).toString(16), 2, "0") +
+                util_1.pad(util_1.trytesToNumber(b).toString(16), 2, "0");
+            num = util_1.trytesToNumber(tag.substring(10, 26));
+            if (!util_1.stringIsRGBHex(rgbHex)) {
+                addProcessedTransaction(transaction);
+                return;
+            }
         }
         message = yield db_1.readMessage(new Message_1.Message(trX, trY, num, null, null));
         if (message === null) {
@@ -174,7 +180,7 @@ function processSingleField(transaction) {
                 newField.transaction = transaction.hash;
                 newField.timestamp = new Date().getTime().toString();
                 yield db_1.updateMapField(newField);
-                util_1.log("Changed field X:" + field.x + " Y:" + field.y + " message:" + field.message + " link: " + field.link + " (txhash: " + transaction.hash + ")");
+                util_1.log("Changed field X:" + field.x + " Y:" + field.y + " message:" + message.text + " link: " + message.link + " (txhash: " + transaction.hash + ")");
             }
         }));
     });
@@ -185,5 +191,15 @@ function addProcessedTransaction(transaction) {
         yield db_1.writeProcessedTransaction(ptx);
         processedTransactions.push(ptx);
     });
+}
+function getTag(transaction) {
+    let tag = transaction.signatureMessageFragment.substring(0, 56);
+    if (tag !== "9".repeat(56)) {
+        tag = util_1.trimEnd(util_1.fromTrytes(util_1.trimEnd(transaction.signatureMessageFragment, "9")), " ");
+    }
+    else {
+        tag = transaction.tag;
+    }
+    return tag;
 }
 //# sourceMappingURL=app.js.map

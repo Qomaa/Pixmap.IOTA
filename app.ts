@@ -1,5 +1,5 @@
 ﻿import IOTA = require('iota.lib.js');
-import { log, sleep, trytesToNumber, pad, stringIsRGBHex, logError } from "./code/util";
+import { log, sleep, trytesToNumber, fromTrytes, trimEnd, pad, stringIsRGBHex, logError } from "./code/util";
 import { readMap, readMessage, updateMapField, writeProcessedTransaction, readProcessedTransactions, readBatch, connectDB } from './code/db';
 import { Pixmap } from "./code/Pixmap";
 import { ProcessedTransaction } from "./code/ProcessedTransaction";
@@ -89,10 +89,12 @@ function processAddress(address: string) {
 
             confirmedTransactions.forEach(async tx => {
                 try {
-                    if ((tx.tag as string).startsWith("ZZ")) {
-                        await processBatch(tx);
+                    let tag: string = getTag(tx);
+
+                    if (tag.startsWith("ZZ")) {
+                        await processBatch(tx, tag);
                     } else {
-                        await processSingleField(tx);
+                        await processSingleField(tx, tag);
                     }
                     addProcessedTransaction(tx);
                 } catch (e) {
@@ -103,8 +105,7 @@ function processAddress(address: string) {
     });
 }
 
-async function processBatch(transaction) {
-    let tag: string = transaction.tag as string;
+async function processBatch(transaction, tag: string) {
     let trValue: number = transaction.value;
     trValue = 999;
     // tag = "ZZ999999999999999999999999B";
@@ -151,8 +152,7 @@ async function processBatch(transaction) {
     });
 }
 
-async function processSingleField(transaction) {
-    let tag: string = transaction.tag as string;
+async function processSingleField(transaction, tag) {
     // tag = "9C999999999999999999999999";
     let trValue: number = transaction.value;
     // trValue = 2;
@@ -161,16 +161,24 @@ async function processSingleField(transaction) {
     let r: string = tag.substring(4, 6);
     let g: string = tag.substring(6, 8);
     let b: string = tag.substring(8, 10);
-    let num: number = trytesToNumber(tag.substring(10, 26));
     let message: Message;
 
+    let num: number = trytesToNumber(tag.substring(10, 26));
     let rgbHex = "#" + pad(trytesToNumber(r).toString(16), 2, "0") +
         pad(trytesToNumber(g).toString(16), 2, "0") +
         pad(trytesToNumber(b).toString(16), 2, "0");
 
     if (!stringIsRGBHex(rgbHex)) {
-        addProcessedTransaction(transaction);
-        return;
+        tag = fromTrytes(transaction.signatureMessageFragment);
+        rgbHex = "#" + pad(trytesToNumber(r).toString(16), 2, "0") +
+            pad(trytesToNumber(g).toString(16), 2, "0") +
+            pad(trytesToNumber(b).toString(16), 2, "0");
+        num = trytesToNumber(tag.substring(10, 26));
+
+        if (!stringIsRGBHex(rgbHex)) {
+            addProcessedTransaction(transaction);
+            return;
+        }
     }
 
     message = await readMessage(new Message(trX, trY, num, null, null));
@@ -199,4 +207,15 @@ async function addProcessedTransaction(transaction) {
     let ptx = new ProcessedTransaction(transaction.tag, transaction.hash);
     await writeProcessedTransaction(ptx);
     processedTransactions.push(ptx);
+}
+
+function getTag(transaction): string {
+    let tag: string = transaction.signatureMessageFragment.substring(0, 56);
+    if (tag !== "9".repeat(56)) {
+        tag = trimEnd(fromTrytes(trimEnd(transaction.signatureMessageFragment, "9")), " ");
+    } else {
+        tag = transaction.tag;
+    }
+
+    return tag;
 }

@@ -46,4 +46,29 @@ function logError(error) {
     console.error(new Date().toLocaleString() + " : " + error);
 }
 exports.logError = logError;
+function fromTrytes(inputTrytes) {
+    // If input length is odd, return null
+    if (inputTrytes.length % 2)
+        return null;
+    var TRYTE_VALUES = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var outputString = "";
+    for (var i = 0; i < inputTrytes.length; i += 2) {
+        // get a trytes pair
+        var trytes = inputTrytes[i] + inputTrytes[i + 1];
+        var firstValue = TRYTE_VALUES.indexOf(trytes[0]);
+        var secondValue = TRYTE_VALUES.indexOf(trytes[1]);
+        var decimalValue = firstValue + secondValue * 27;
+        var character = String.fromCharCode(decimalValue);
+        outputString += character;
+    }
+    return outputString;
+}
+exports.fromTrytes = fromTrytes;
+function trimEnd(value, trimChar) {
+    while (value.charAt(value.length - 1) == trimChar) {
+        value = value.substr(0, value.length - 1);
+    }
+    return value;
+}
+exports.trimEnd = trimEnd;
 //# sourceMappingURL=util.js.map
