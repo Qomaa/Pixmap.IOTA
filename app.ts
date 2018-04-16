@@ -107,7 +107,7 @@ function processAddress(address: string) {
 
 async function processBatch(transaction, tag: string) {
     let trValue: number = transaction.value;
-    trValue = 999;
+    //trValue = 999;
     // tag = "ZZ999999999999999999999999B";
     let minimumBatchValue: number = 0;
     let fieldToChange: MapField;
@@ -116,8 +116,11 @@ async function processBatch(transaction, tag: string) {
     let fieldsToChange: MapField[] = [];
     let i: number = 0;
 
+    log("Processing transaction tag/hash : " + tag + "/" + transaction.hash);
+
     batch = await readBatch(tag);
     if (batch === null) {
+        log("No batch found.")
         addProcessedTransaction(transaction);
         return;
     }
@@ -126,16 +129,18 @@ async function processBatch(transaction, tag: string) {
         fieldToChange = pixmap.mapFields.find(originalField => originalField.x === batchField.x && originalField.y === batchField.y);
         if (fieldToChange === undefined) return;
 
+        log(++i + ": Processing field (" + fieldToChange.x + "/" + fieldToChange.y + ")" + " Current value: " + fieldToChange.value + " NewValue: " + batchField.value + " Current txValue: " + trValue);
+
         //Prüfen, ob das zu ändernde Feld des Batches genug Wert hat.
         if (batchField.value < fieldToChange.value) {
-            log(++i + "Batch-Field (" + batchField.x + "/" + batchField.y + ") doesn't have enough value. Has: " + batchField.value + " Required at least: " + fieldToChange.value + 1);
+            log("Batch-Field (" + batchField.x + "/" + batchField.y + ") doesn't have enough value. Has: " + batchField.value + " Required at least: " + fieldToChange.value + 1);
             return;
         }
 
         //Prüfen, ob die Transaktion genug Wert hat um Feld zu ändern.
         trValue = trValue - batchField.value;
         if (trValue < 0) {
-            log(++i + "Transaction has not enough value to set all fields.");
+            log("Transaction has not enough value to set all fields.");
             return;
         }
 
@@ -147,8 +152,8 @@ async function processBatch(transaction, tag: string) {
         fieldToChange.transaction = transaction.hash;
         fieldToChange.timestamp = new Date().getTime().toString();
 
+        log("Batch: Changing field X:" + fieldToChange.x + " Y:" + fieldToChange.y + " message:" + fieldToChange.message + " link: " + fieldToChange.link);
         await updateMapField(fieldToChange);
-        log(++i + ": Batch: Changed field X:" + fieldToChange.x + " Y:" + fieldToChange.y + " message:" + fieldToChange.message + " link: " + fieldToChange.link);
     });
 }
 
@@ -162,23 +167,17 @@ async function processSingleField(transaction, tag) {
     let g: string = tag.substring(6, 8);
     let b: string = tag.substring(8, 10);
     let message: Message;
-
     let num: number = trytesToNumber(tag.substring(10, 26));
     let rgbHex = "#" + pad(trytesToNumber(r).toString(16), 2, "0") +
         pad(trytesToNumber(g).toString(16), 2, "0") +
         pad(trytesToNumber(b).toString(16), 2, "0");
 
-    if (!stringIsRGBHex(rgbHex)) {
-        tag = fromTrytes(transaction.signatureMessageFragment);
-        rgbHex = "#" + pad(trytesToNumber(r).toString(16), 2, "0") +
-            pad(trytesToNumber(g).toString(16), 2, "0") +
-            pad(trytesToNumber(b).toString(16), 2, "0");
-        num = trytesToNumber(tag.substring(10, 26));
+    log("Processing transaction tag/hash : " + tag + "/" + transaction.hash);
 
-        if (!stringIsRGBHex(rgbHex)) {
-            addProcessedTransaction(transaction);
-            return;
-        }
+    if (!stringIsRGBHex(rgbHex)) {
+        log("Tag is not valid.");
+        addProcessedTransaction(transaction);
+        return;
     }
 
     message = await readMessage(new Message(trX, trY, num, null, null));

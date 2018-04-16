@@ -99,7 +99,7 @@ function processAddress(address) {
 function processBatch(transaction, tag) {
     return __awaiter(this, void 0, void 0, function* () {
         let trValue = transaction.value;
-        trValue = 999;
+        //trValue = 999;
         // tag = "ZZ999999999999999999999999B";
         let minimumBatchValue = 0;
         let fieldToChange;
@@ -107,8 +107,10 @@ function processBatch(transaction, tag) {
         let batch;
         let fieldsToChange = [];
         let i = 0;
+        util_1.log("Processing transaction tag/hash : " + tag + "/" + transaction.hash);
         batch = yield db_1.readBatch(tag);
         if (batch === null) {
+            util_1.log("No batch found.");
             addProcessedTransaction(transaction);
             return;
         }
@@ -116,15 +118,16 @@ function processBatch(transaction, tag) {
             fieldToChange = pixmap.mapFields.find(originalField => originalField.x === batchField.x && originalField.y === batchField.y);
             if (fieldToChange === undefined)
                 return;
+            util_1.log(++i + ": Processing field (" + fieldToChange.x + "/" + fieldToChange.y + ")" + " Current value: " + fieldToChange.value + " NewValue: " + batchField.value + " Current txValue: " + trValue);
             //Prüfen, ob das zu ändernde Feld des Batches genug Wert hat.
             if (batchField.value < fieldToChange.value) {
-                util_1.log(++i + "Batch-Field (" + batchField.x + "/" + batchField.y + ") doesn't have enough value. Has: " + batchField.value + " Required at least: " + fieldToChange.value + 1);
+                util_1.log("Batch-Field (" + batchField.x + "/" + batchField.y + ") doesn't have enough value. Has: " + batchField.value + " Required at least: " + fieldToChange.value + 1);
                 return;
             }
             //Prüfen, ob die Transaktion genug Wert hat um Feld zu ändern.
             trValue = trValue - batchField.value;
             if (trValue < 0) {
-                util_1.log(++i + "Transaction has not enough value to set all fields.");
+                util_1.log("Transaction has not enough value to set all fields.");
                 return;
             }
             //Die Transaktion hat (noch) für dieses Feld genug Wert, also ändern.
@@ -134,8 +137,8 @@ function processBatch(transaction, tag) {
             fieldToChange.value = batchField.value;
             fieldToChange.transaction = transaction.hash;
             fieldToChange.timestamp = new Date().getTime().toString();
+            util_1.log("Batch: Changing field X:" + fieldToChange.x + " Y:" + fieldToChange.y + " message:" + fieldToChange.message + " link: " + fieldToChange.link);
             yield db_1.updateMapField(fieldToChange);
-            util_1.log(++i + ": Batch: Changed field X:" + fieldToChange.x + " Y:" + fieldToChange.y + " message:" + fieldToChange.message + " link: " + fieldToChange.link);
         }));
     });
 }
@@ -154,16 +157,11 @@ function processSingleField(transaction, tag) {
         let rgbHex = "#" + util_1.pad(util_1.trytesToNumber(r).toString(16), 2, "0") +
             util_1.pad(util_1.trytesToNumber(g).toString(16), 2, "0") +
             util_1.pad(util_1.trytesToNumber(b).toString(16), 2, "0");
+        util_1.log("Processing transaction tag/hash : " + tag + "/" + transaction.hash);
         if (!util_1.stringIsRGBHex(rgbHex)) {
-            tag = util_1.fromTrytes(transaction.signatureMessageFragment);
-            rgbHex = "#" + util_1.pad(util_1.trytesToNumber(r).toString(16), 2, "0") +
-                util_1.pad(util_1.trytesToNumber(g).toString(16), 2, "0") +
-                util_1.pad(util_1.trytesToNumber(b).toString(16), 2, "0");
-            num = util_1.trytesToNumber(tag.substring(10, 26));
-            if (!util_1.stringIsRGBHex(rgbHex)) {
-                addProcessedTransaction(transaction);
-                return;
-            }
+            util_1.log("Tag is not valid.");
+            addProcessedTransaction(transaction);
+            return;
         }
         message = yield db_1.readMessage(new Message_1.Message(trX, trY, num, null, null));
         if (message === null) {
