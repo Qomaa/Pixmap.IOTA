@@ -31,7 +31,9 @@ async function start() {
     while (true) {
         log("start run");
 
-        processAddress(address);
+        if (address != undefined && address != ""){
+            processAddress(address);
+        }
         if (address2 != undefined && address2 != "") {
             processAddress(address2);
         }

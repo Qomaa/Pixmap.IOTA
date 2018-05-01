@@ -32,7 +32,9 @@ function start() {
         yield init();
         while (true) {
             util_1.log("start run");
-            processAddress(address);
+            if (address != undefined && address != "") {
+                processAddress(address);
+            }
             if (address2 != undefined && address2 != "") {
                 processAddress(address2);
             }
