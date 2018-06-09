@@ -100,6 +100,7 @@ function processAddress(address) {
 }
 function processBatch(transaction, tag) {
     return __awaiter(this, void 0, void 0, function* () {
+        tag = tag.toUpperCase();
         let trValue = transaction.value;
         //trValue = 999;
         // tag = "ZZ999999999999999999999999B";
@@ -146,6 +147,7 @@ function processBatch(transaction, tag) {
 }
 function processSingleField(transaction, tag) {
     return __awaiter(this, void 0, void 0, function* () {
+        tag = tag.toUpperCase();
         // tag = "9C999999999999999999999999";
         let trValue = transaction.value;
         // trValue = 2;

@@ -108,6 +108,7 @@ function processAddress(address: string) {
 }
 
 async function processBatch(transaction, tag: string) {
+    tag = tag.toUpperCase();
     let trValue: number = transaction.value;
     //trValue = 999;
     // tag = "ZZ999999999999999999999999B";
@@ -160,6 +161,7 @@ async function processBatch(transaction, tag: string) {
 }
 
 async function processSingleField(transaction, tag) {
+    tag = tag.toUpperCase();
     // tag = "9C999999999999999999999999";
     let trValue: number = transaction.value;
     // trValue = 2;
