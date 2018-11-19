@@ -186,6 +186,7 @@ async function processSingleField(transaction, tag) {
 
     message = await readMessage(new Message(trX, trY, num, null, null));
     if (message === null) {
+        log("No message found: " + "trX: "+  trX + " trY:" + trY);
         addProcessedTransaction(transaction);
         return;
     }
@@ -202,6 +203,10 @@ async function processSingleField(transaction, tag) {
             newField.timestamp = new Date().getTime().toString();
             await updateMapField(newField);
             log("Changed field X:" + field.x + " Y:" + field.y + " message:" + message.text + " link: " + message.link + " (txhash: " + transaction.hash + ")");
+        }
+        else
+        {
+            log("No fields to change found: trX:" + trX + " trY :" + trY + " value: " + trValue);
         }
     });
 }

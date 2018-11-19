@@ -169,6 +169,7 @@ function processSingleField(transaction, tag) {
         }
         message = yield db_1.readMessage(new Message_1.Message(trX, trY, num, null, null));
         if (message === null) {
+            util_1.log("No message found: " + "trX: " + trX + " trY:" + trY);
             addProcessedTransaction(transaction);
             return;
         }
@@ -183,6 +184,9 @@ function processSingleField(transaction, tag) {
                 newField.timestamp = new Date().getTime().toString();
                 yield db_1.updateMapField(newField);
                 util_1.log("Changed field X:" + field.x + " Y:" + field.y + " message:" + message.text + " link: " + message.link + " (txhash: " + transaction.hash + ")");
+            }
+            else {
+                util_1.log("No fields to change found: trX:" + trX + " trY :" + trY + " value: " + trValue);
             }
         }));
     });
